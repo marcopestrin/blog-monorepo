@@ -5,6 +5,7 @@ import { Tenants, prisma, Articles } from "@marcopestrin/blog-core";
 import fs from "fs";
 
 yargs(hideBin(process.argv))
+
   .command("create-tenant", "Create a Tenant", (y) => y
     .option("name", { type: "string", demandOption: true })
     .option("slug", { type: "string", demandOption: true })
@@ -13,6 +14,7 @@ yargs(hideBin(process.argv))
     console.log("Tenant created:", t);
     process.exit(0);
   })
+
   .command("export", "Export content of a tenant", (y) => y
     .option("tenant", { type: "string", demandOption: true })
     .option("out", { type: "string", default: "export.json" })
@@ -28,6 +30,7 @@ yargs(hideBin(process.argv))
     console.log("Exported in", args.out);
     process.exit(0);
   })
+
   .command("import", "Import content of a Tenant", (y) => y
     .option("tenant", { type: "string", demandOption: true })
     .option("in", { type: "string", demandOption: true })
@@ -53,6 +56,7 @@ yargs(hideBin(process.argv))
     console.log("Import completed");
     process.exit(0);
   })
+  
   .demandCommand()
   .help()
   .parse();

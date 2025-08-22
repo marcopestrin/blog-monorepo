@@ -1,0 +1,21 @@
+name: Mirror blog-cli subtree
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.BLOG_CLI_DEPLOY_KEY }}
+
+      - name: Push subtree to blog-cli repo
+        run: |
+          git subtree split --prefix=packages/blog-cli -b publish-blog-cli
+          git push -f git@github.com:marcopestrin/blog-cli.git publish-blog-cli:main
