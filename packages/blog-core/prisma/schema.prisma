@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+}
+
+enum ArticleStatus {
+  draft
+  scheduled
+  published
+  archived
+}
+
+enum Role {
+  writer
+  editor
+  publisher
+  admin
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  apiKey    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  articles  Article[]
+  tags      Tag[]
+  media     MediaAsset[]
+  authors   Author[]  // back-relation per Author
+}
+
+model User {
+  id        String   @id @default(uuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  email     String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles     RoleAssignment[]
+
+  @@unique([tenantId, email])
+}
+
+model RoleAssignment {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  role      Role
+  createdAt DateTime @default(now())
+}
+
+model Author {
+  id        String   @id @default(uuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  name      String
+  bio       String?
+  avatarId  String?
+  profileUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles  Article[]
+}
+
+model MediaAsset {
+  id        String   @id @default(uuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  path      String
+  mime      String?
+  width     Int?
+  height    Int?
+  alt       String?
+  meta      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles  Article[] @relation("CoverMedia")
+}
+
+model Article {
+  id            String        @id @default(uuid())
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String
+  author        Author?       @relation(fields: [authorId], references: [id])
+  authorId      String?
+  coverMedia    MediaAsset?   @relation("CoverMedia", fields: [coverMediaId], references: [id])
+  coverMediaId  String?
+  title         String
+  slug          String
+  locale        String        @default("it")
+  status        ArticleStatus @default(draft)
+  publishedAt   DateTime?
+  excerpt       String?
+  content       String
+  seoTitle      String?
+  seoDescription String?
+  canonicalUrl  String?
+  version       Int           @default(1)
+  previewToken  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  tags          ArticleTag[]
+  revisions     Revision[]
+
+  @@unique([tenantId, slug, locale])
+  @@index([tenantId, status, publishedAt])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId  String
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles  ArticleTag[]
+
+  @@unique([tenantId, slug])
+}
+
+model ArticleTag {
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@id([articleId, tagId])
+}
+
+model Revision {
+  id         String   @id @default(uuid())
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId  String
+  snapshot   Json
+  createdBy  String?
+  createdAt  DateTime @default(now())
+}

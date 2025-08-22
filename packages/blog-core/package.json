@@ -1,0 +1,41 @@
+{
+  "name": "@marcopestrin/blog-core",
+  "version": "0.3.1",
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:seed": "tsx src/seed.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist/**",
+    "prisma/**",
+    "scripts/**",
+    "README.md",
+    "package.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.16.1",
+    "bcryptjs": "^2.4.3",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "uuid": "^9.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "prisma": "^5.16.1",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.4"
+  }
+}
